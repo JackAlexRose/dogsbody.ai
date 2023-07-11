@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { fetchFromAdana, transformAdanaArticle } from "./adana";
+import { fetchLearnArticle, transformAdanaArticle } from "./adana";
 import {
   fetchFromGPT,
   gptSuggestTags,
@@ -7,13 +7,13 @@ import {
   gptPromptBuilder,
   gptTagsPromptBuilder,
 } from "./gpt";
-import { doSomeWorkButMakeItPretty, writeToFile } from "./utils";
+import { doSomeWorkButMakeItPretty, writeToFile } from "./utils/local.util";
 
 export const transformArticle = async (article: string) => {
   const adanaResponse = await doSomeWorkButMakeItPretty(
     "Adana Fetch",
     async () => {
-      const data = await fetchFromAdana(article);
+      const data = await fetchLearnArticle(article);
       writeToFile("1-adana.json", data);
       return data;
     }

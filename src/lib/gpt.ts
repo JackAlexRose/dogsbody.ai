@@ -3,7 +3,7 @@ import {
   Configuration,
   ChatCompletionResponseMessage,
 } from "openai";
-import { getEnv } from "./utils";
+import { getEnv } from "./utils/config.util";
 
 const configuration = new Configuration({
   apiKey: getEnv("OPEN_AI_TOKEN"),
@@ -11,6 +11,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export const fetchFromGPT = async (message: string) => {
+  console.log('Fetch GPT...');
   const chatCompletion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-0613",
     messages: [{ role: "user", content: message }],
@@ -58,6 +59,8 @@ export const fetchFromGPT = async (message: string) => {
       },
     ],
   });
+
+  console.log('Done');
 
   return chatCompletion.data.choices[0].message;
 };

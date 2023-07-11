@@ -1,13 +1,8 @@
 import axios from "axios";
-import { getEnv, writeToFile } from "./utils";
+import { getEnv } from "./utils/config.util";
 import { IAdanaResponse, LearnArticle } from "../definitions/IAdana";
-import { gptPromptBuilder } from "./gpt";
 
-const fetchLearnArticle = async (
-  api: string,
-  apiKey: string,
-  articleUrl: string
-) => {
+export const fetchLearnArticle = async (articleUrl: string) => {
   const query = `query GetAllLearnArticles { getAllLearnArticles {
     id
     locale
@@ -67,11 +62,11 @@ const fetchLearnArticle = async (
     }}`;
 
   const response = await axios.post<IAdanaResponse>(
-    `${api}/graphql`,
+    `${getEnv("ADANA_URL")}/graphql`,
     {
       query,
     },
-    { headers: { "content-type": "application/json", "x-api-key": apiKey } }
+    { headers: { "content-type": "application/json", "x-api-key": getEnv("ADANA_KEY") } }
   );
 
   const article = response.data.data.getAllLearnArticles.filter(
@@ -80,12 +75,26 @@ const fetchLearnArticle = async (
   return article[0];
 };
 
-export const fetchFromAdana = async (articleUrl: string) => {
-  return await fetchLearnArticle(
-    getEnv("ADANA_URL"),
-    getEnv("ADANA_KEY"),
-    articleUrl
+export const fetchAllLearnArticles = async () => {
+  const query = `query GetAllLearnArticles { getAllLearnArticles {
+    meta {
+        title
+        url
+    }
+    }}`;
+
+  const response = await axios.post<IAdanaResponse>(
+    `${getEnv("ADANA_URL")}/graphql`,
+    {
+      query,
+    },
+    { headers: { "content-type": "application/json", "x-api-key": getEnv("ADANA_KEY") } }
   );
+
+  return response.data.data.getAllLearnArticles.map((article) => ({
+    title: article.meta.title,
+    url: article.meta.url,
+  }));
 };
 
 export const transformAdanaArticle = (

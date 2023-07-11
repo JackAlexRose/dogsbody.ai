@@ -1,16 +1,7 @@
-import * as dotenv from "dotenv";
 import chalk from "chalk";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import { cwd } from "process";
-dotenv.config();
-
-export const getEnv = (
-  key: string,
-  type?: StringConstructor | NumberConstructor | BooleanConstructor
-) => {
-  return (type ?? (String as any))(process.env[key]);
-};
 
 export const writeToFile = (
   name: string,

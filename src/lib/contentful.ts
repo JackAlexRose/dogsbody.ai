@@ -1,5 +1,5 @@
 import contentful from "contentful-management";
-import { getEnv } from "./utils";
+import { getEnv } from "./utils/local.util";
 
 import axios from "axios";
 import chalk from "chalk";
