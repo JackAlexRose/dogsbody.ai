@@ -1,19 +1,15 @@
 import logo from "./assets/dogsbody.svg";
 import "./App.css";
+import { Center, Heading } from "@chakra-ui/react";
 
 function App() {
   return (
-    <>
-      <div>
-        <a href="https://react.dev" target="_blank">
-          <img src={logo} className="logo react" alt="Dogsbody logo" />
-        </a>
-      </div>
-      <h1>dogsbody.ai</h1>
-      <div className="card">
-        <p>Hello world</p>
-      </div>
-    </>
+    <Center height="100vh" flexDirection="column">
+      <img src={logo} className="logo react" alt="Dogsbody logo" />
+      <Heading as="h1" size="2xl">
+        dogsbody.ai
+      </Heading>
+    </Center>
   );
 }
 
