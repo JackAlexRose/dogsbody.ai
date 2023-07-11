@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import chalk from "chalk";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import { cwd } from "process";
@@ -27,4 +28,20 @@ export const writeToFile = (
       encoding: "utf-8",
     }
   );
+};
+
+export const doSomeWorkButMakeItPretty = async (
+  name: string,
+  callback: () => Promise<any>
+) => {
+  try {
+    console.log(chalk.cyan(`[Working] ${name}...`));
+    const data = await callback();
+    console.log(chalk.greenBright(`[Done] ${name}.`));
+    return data;
+  } catch (e) {
+    console.log(chalk.red(`[Error] ${name}.`));
+    console.error(e);
+    process.exit(1);
+  }
 };

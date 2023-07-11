@@ -1,5 +1,6 @@
 import { fetchFromAdana } from "./lib/adana";
 import { fetchFromGPT, transformGPTResponse } from "./lib/gpt";
+import { transformArticle } from "./lib/transformer";
 import { getEnv, writeToFile } from "./lib/utils";
 
 // const run = async () => {
@@ -10,10 +11,9 @@ import { getEnv, writeToFile } from "./lib/utils";
 // };
 
 const run = async () => {
-  const message = await fetchFromAdana(
+  await transformArticle(
     "http://www.clearscore.com/learn/credit-score-and-report/what-you-need-to-know-if-you-have-no-credit-history"
   );
-  writeToFile("adana.json", message);
 };
 
 run();

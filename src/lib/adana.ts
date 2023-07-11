@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getEnv, writeToFile } from "./utils";
-import { IAdanaResponse } from "../definitions/IAdana";
+import { IAdanaResponse, LearnArticle } from "../definitions/IAdana";
 
 const fetchLearnArticle = async (
   api: string,
@@ -73,11 +73,10 @@ const fetchLearnArticle = async (
     { headers: { "content-type": "application/json", "x-api-key": apiKey } }
   );
 
-  console.log(response.data.data.getAllLearnArticles.map((x) => x.meta.url));
   const article = response.data.data.getAllLearnArticles.filter(
     (article) => article.meta.url === articleUrl.replace("https", "http")
   );
-  return article;
+  return article[0];
 };
 
 export const fetchFromAdana = async (articleUrl: string) => {
@@ -86,4 +85,8 @@ export const fetchFromAdana = async (articleUrl: string) => {
     getEnv("ADANA_KEY"),
     articleUrl
   );
+};
+
+export const transformAdanaArticle = (article: LearnArticle) => {
+  return article.language.content;
 };

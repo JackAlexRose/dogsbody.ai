@@ -4,10 +4,10 @@ export interface IAdanaResponse {
 }
 
 export interface Data {
-  getAllLearnArticles: GetAllLearnArticle[];
+  getAllLearnArticles: LearnArticle[];
 }
 
-export interface GetAllLearnArticle {
+export interface LearnArticle {
   id: string;
   locale: string;
   createdOn: any;
