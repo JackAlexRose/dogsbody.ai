@@ -1,0 +1,30 @@
+{
+  "name": "chatbot-sandbox",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "asynckit": "0.4.0",
+    "axios": "0.26.1",
+    "combined-stream": "1.0.8",
+    "delayed-stream": "1.0.0",
+    "dotenv": "16.3.1",
+    "follow-redirects": "1.15.2",
+    "form-data": "4.0.0",
+    "mime-db": "1.52.0",
+    "mime-types": "2.1.35",
+    "openai": "3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.4.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx tsx --tsconfig ./tsconfig.json ./src/index.ts",
+    "dev": "npx tsx watch --tsconfig ./tsconfig.json"
+  },
+  "keywords": [],
+  "author": "Jack Rose <jack.rose@clearscore.com> (https://www.clearscore.com/)",
+  "license": "UNLICENSED"
+}
