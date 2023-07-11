@@ -1,6 +1,12 @@
 import chalk from "chalk";
 import { fetchFromAdana, transformAdanaArticle } from "./adana";
-import { fetchFromGPT, transformGPTResponse, gptPromptBuilder } from "./gpt";
+import {
+  fetchFromGPT,
+  gptSuggestTags,
+  transformGPTResponse,
+  gptPromptBuilder,
+  gptTagsPromptBuilder,
+} from "./gpt";
 import { doSomeWorkButMakeItPretty, writeToFile } from "./utils";
 
 export const transformArticle = async (article: string) => {
@@ -26,16 +32,32 @@ export const transformArticle = async (article: string) => {
     "Crunch numbers with AI",
     async () => {
       const data = await fetchFromGPT(
-        gptPromptBuilder(adanaResponseTransformed)
+        gptPromptBuilder(adanaResponseTransformed.content)
       );
       writeToFile("3-gpt.json", data);
       return data;
     }
   );
 
+  const gptSuggestedTags = await doSomeWorkButMakeItPretty(
+    "Generating tags with AI",
+    async () => {
+      const data = await gptSuggestTags(
+        gptTagsPromptBuilder(adanaResponseTransformed.content)
+      );
+      writeToFile("4-gpt-tags.json", data);
+      return data;
+    }
+  );
+
   await doSomeWorkButMakeItPretty("Make the AI make sense", async () => {
-    const data = transformGPTResponse(gptResponse);
-    writeToFile("4-gpt-transformed.json", data);
+    const data = transformGPTResponse(gptResponse, {
+      title: adanaResponseTransformed.title,
+      description: adanaResponseTransformed.description,
+      url: adanaResponseTransformed.url,
+      tags: gptSuggestedTags,
+    });
+    writeToFile("5-gpt-transformed.json", data);
     return data;
   });
 

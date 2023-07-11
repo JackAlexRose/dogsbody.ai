@@ -90,7 +90,12 @@ export const fetchFromAdana = async (articleUrl: string) => {
 
 export const transformAdanaArticle = (
   article: LearnArticle
-): Parameters<typeof gptPromptBuilder>[0] => {
+): {
+  title: string;
+  description: string;
+  url: string;
+  content: string;
+} => {
   return {
     title: article.meta.title,
     description: article.meta.description,
