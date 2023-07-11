@@ -22,6 +22,21 @@ export const fetchFromGPT = async (message: string) => {
         parameters: {
           type: "object",
           properties: {
+            metadata: {
+              type: "object",
+              properties: {
+                title: {
+                  type: "string",
+                },
+                description: {
+                  type: "string",
+                },
+                url: {
+                  type: "string",
+                },
+              },
+              required: ["title", "url"],
+            },
             textBlocks: {
               type: "array",
               description: "An array of text blocks.",
@@ -69,4 +84,23 @@ export const transformGPTResponse = (
     message!.function_call!.arguments as string
   );
   return message;
+};
+
+export const gptPromptBuilder = (details: {
+  title: string;
+  content: string;
+  url: string;
+  description?: string;
+}) => {
+  const initialPrompt = "Create a rich text string from the following content:";
+
+  const message = [
+    `title: ${details.title}`,
+    `description: ${details.description || ""}`,
+    `url: ${details.url}`,
+    `markdown: ${details.content}`,
+  ].join("\n\n");
+
+  return `${initialPrompt}
+  ${message}`;
 };

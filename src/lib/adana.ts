@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getEnv, writeToFile } from "./utils";
 import { IAdanaResponse, LearnArticle } from "../definitions/IAdana";
+import { gptPromptBuilder } from "./gpt";
 
 const fetchLearnArticle = async (
   api: string,
@@ -87,6 +88,13 @@ export const fetchFromAdana = async (articleUrl: string) => {
   );
 };
 
-export const transformAdanaArticle = (article: LearnArticle) => {
-  return article.language.content;
+export const transformAdanaArticle = (
+  article: LearnArticle
+): Parameters<typeof gptPromptBuilder>[0] => {
+  return {
+    title: article.meta.title,
+    description: article.meta.description,
+    url: article.meta.url,
+    content: article.language.content,
+  };
 };

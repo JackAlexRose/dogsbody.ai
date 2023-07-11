@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { fetchFromAdana, transformAdanaArticle } from "./adana";
-import { fetchFromGPT, transformGPTResponse } from "./gpt";
+import { fetchFromGPT, transformGPTResponse, gptPromptBuilder } from "./gpt";
 import { doSomeWorkButMakeItPretty, writeToFile } from "./utils";
 
 export const transformArticle = async (article: string) => {
@@ -26,21 +26,18 @@ export const transformArticle = async (article: string) => {
     "Crunch numbers with AI",
     async () => {
       const data = await fetchFromGPT(
-        `Turn the following markdown content into a single string with rich text formatting: ${adanaResponseTransformed}`
+        gptPromptBuilder(adanaResponseTransformed)
       );
       writeToFile("3-gpt.json", data);
       return data;
     }
   );
 
-  const gptResponseTransformed = await doSomeWorkButMakeItPretty(
-    "Make the AI make sense",
-    async () => {
-      const data = transformGPTResponse(gptResponse);
-      writeToFile("4-gpt-transformed.json", data);
-      return data;
-    }
-  );
+  await doSomeWorkButMakeItPretty("Make the AI make sense", async () => {
+    const data = transformGPTResponse(gptResponse);
+    writeToFile("4-gpt-transformed.json", data);
+    return data;
+  });
 
   console.log(chalk.magentaBright("All done and dusted."));
 };
