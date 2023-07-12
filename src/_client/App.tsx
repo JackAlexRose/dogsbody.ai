@@ -73,7 +73,8 @@ function App() {
               tags: tags as string,
             });
 
-            await pushToContentful(data, (msg) => addMessageToHistory(msg, "dog"));
+            const url = await pushToContentful(data, (msg) => addMessageToHistory(msg, "dog"));
+            addMessageToHistory(url, "dog")
           }}
         >
           Fetch
