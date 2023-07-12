@@ -1,24 +1,27 @@
 import { useEffect, useState } from "react";
-import { fetchAllLearnArticles } from "../../../lib/adana";
+import { fetchAllLearnArticles, fetchLearnArticle } from "../../../lib/adana";
 
 export const useAdanaArticles = () => {
-    const [ articles, setArticles ] = useState<Awaited<ReturnType<typeof fetchAllLearnArticles>>>([]);
-    const [ articlesLoading, setArticlesLoading ] = useState(false);
+  const [articles, setArticles] = useState<
+    Awaited<ReturnType<typeof fetchAllLearnArticles>>
+  >([]);
+  const [articlesLoading, setArticlesLoading] = useState(false);
 
-    const refreshArticles = async () => {
-        setArticlesLoading(true);
-        fetchAllLearnArticles()
-        .then((data) => setArticles(data))
-        .finally(() => setArticlesLoading(false));
-    }
+  const refreshArticles = async () => {
+    setArticlesLoading(true);
+    fetchAllLearnArticles()
+      .then((data) => setArticles(data))
+      .finally(() => setArticlesLoading(false));
+  };
 
-    useEffect(() => {
-        if (articlesLoading || articles.length > 0) return;
-        refreshArticles();
-    }, [ articlesLoading, articles.length ]);
+  useEffect(() => {
+    if (articlesLoading || articles.length > 0) return;
+    refreshArticles();
+  }, [articlesLoading, articles.length]);
 
-    return {
-        articles,
-        articlesLoading
-    }
+  return {
+    articles,
+    articlesLoading,
+    fetchLearnArticle,
+  };
 };
