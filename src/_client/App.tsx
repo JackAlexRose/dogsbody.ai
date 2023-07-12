@@ -2,10 +2,13 @@ import logo from "./assets/dogsbody.svg";
 import "./App.scss";
 import { Button, Center, Heading, Input, Text } from "@chakra-ui/react";
 import { useAdanaArticles } from "./lib/hooks/use-adana-articles";
-import { useGPT } from "./lib/hooks/use-gpt";
+import { useGPT, useGPTTags } from "./lib/hooks/use-gpt";
 import { useEffect, useState } from "react";
 import Chat from "./components/Chat";
 import { set } from "lodash";
+import { transformGPTResponse } from "../lib/gpt";
+import { fetchLearnArticle, transformAdanaArticle } from "../lib/adana";
+import { pushToContentful } from "../lib/contentful";
 
 function App() {
   const [input, setInput] = useState("");
@@ -13,6 +16,7 @@ function App() {
   const { articles, articlesLoading } = useAdanaArticles();
 
   const { currentMessage, fetchFromGPT, isLoading } = useGPT();
+  const { currentTags, fetchTagsFromGPT, isLoadingTags } = useGPTTags();
 
   const [messages, setMessages] = useState([]);
 
@@ -22,15 +26,10 @@ function App() {
   };
 
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // useEffect(() => {
-  //   if (mounted) {
-  //     addMessageToHistory(currentMessage, "dog");
-  //   }
-  // }, [isLoading]);
 
   return (
     <Center height="100vh" flexDirection="column">
@@ -57,8 +56,24 @@ function App() {
           type="submit"
           onClick={async () => {
             addMessageToHistory(input, "me");
-            addMessageToHistory("Woof woof", "dog");
-            fetchFromGPT(input, (data) => addMessageToHistory(data, "dog"));
+            addMessageToHistory("Loading Content...", "dog");
+            const content = await fetchFromGPT(input, () => addMessageToHistory('Content Loaded', "dog"));
+            addMessageToHistory("Loading tags...", "dog");
+            const tags = await fetchTagsFromGPT(input, () => addMessageToHistory('Tags Loaded', "dog"));
+
+            addMessageToHistory("Transforming Content...", "dog");
+
+            const adanaResponse = await fetchLearnArticle(input);
+            const adanaTransformed = await transformAdanaArticle(adanaResponse);
+
+            const data = transformGPTResponse(content as string, {
+              title: adanaTransformed.title,
+              description: adanaTransformed.description,
+              url: adanaTransformed.url,
+              tags: tags as string,
+            });
+
+            await pushToContentful(data, (msg) => addMessageToHistory(msg, "dog"));
           }}
         >
           Fetch

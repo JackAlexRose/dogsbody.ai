@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchGptArticleCore, gptPromptBuilder } from "../../../lib/gpt";
+import { fetchGptArticleCore, fetchGptArticleTags, gptPromptBuilder, gptTagsPromptBuilder } from "../../../lib/gpt";
 import { fetchLearnArticle, transformAdanaArticle } from "../../../lib/adana";
 
 export const useGPT = () => {
@@ -22,6 +22,7 @@ export const useGPT = () => {
     setCurrentMessage(data);
     callback(data);
     setIsLoading(false);
+    return data;
   };
 
   return {
@@ -30,3 +31,34 @@ export const useGPT = () => {
     currentMessage,
   };
 };
+
+export const useGPTTags = () => {
+    const [currentTags, setCurrentTags] = useState("");
+    const [isLoadingTags, setIsLoading] = useState(false);
+
+    const fetchTagsFromGPT = async (
+        message: string,
+        callback: (data: string) => void
+    ) => {
+        if (isLoadingTags) return;
+        setIsLoading(true);
+        const adanaResponse = await fetchLearnArticle(message);
+        const adanaTransformed = await transformAdanaArticle(adanaResponse);
+
+        const data = await fetchGptArticleTags(
+            gptTagsPromptBuilder(adanaTransformed.content),
+            (_, total) => setCurrentTags(total)
+        );
+        setCurrentTags(data);
+        callback(data);
+        setIsLoading(false);
+        return data;
+    };
+
+    return {
+        fetchTagsFromGPT,
+        isLoadingTags,
+        currentTags,
+    };
+};
+
