@@ -4,6 +4,8 @@ import {
   ChatCompletionResponseMessage,
 } from "openai";
 import { getEnv } from "./utils/config.util";
+import { IGPTTransformedResponse } from "../definitions/IGPT";
+import { CONTENTFUL_GPT_BLOCK_MAP } from "../definitions/IContentful";
 
 const configuration = new Configuration({
   apiKey: getEnv("OPEN_AI_TOKEN"),
@@ -11,7 +13,6 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 export const fetchFromGPT = async (message: string) => {
-  console.log('Fetch GPT...');
   const chatCompletion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo-0613",
     messages: [{ role: "user", content: message }],
@@ -34,17 +35,7 @@ export const fetchFromGPT = async (message: string) => {
                   },
                   type: {
                     type: "string",
-                    enum: [
-                      "h1",
-                      "h2",
-                      "h3",
-                      "h4",
-                      "h5",
-                      "h6",
-                      "p",
-                      "a",
-                      "blockquote",
-                    ],
+                    enum: Object.keys(CONTENTFUL_GPT_BLOCK_MAP),
                   },
                   href: {
                     type: "string",
@@ -59,8 +50,6 @@ export const fetchFromGPT = async (message: string) => {
       },
     ],
   });
-
-  console.log('Done');
 
   return chatCompletion.data.choices[0].message;
 };
@@ -143,7 +132,7 @@ export const transformGPTResponse = (
     url: string;
     tags: ChatCompletionResponseMessage;
   }
-) => {
+): IGPTTransformedResponse => {
   const pageData = JSON.parse(message.function_call!.arguments as string);
   pageData.metadata = {
     title: metadata.title,
