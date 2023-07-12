@@ -1,5 +1,5 @@
 import logo from "./assets/dogsbody.svg";
-import "./App.css";
+import "./App.scss";
 import { Center, Heading } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { fetchAllLearnArticles } from "../lib/adana";
