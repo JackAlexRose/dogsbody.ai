@@ -6,8 +6,8 @@ export const CONTENTFUL_GPT_BLOCK_MAP = {
     'h5': 'heading-5',
     'h6': 'heading-6',
     'p': 'paragraph',
-    'a': 'hyperlink',
-    'blockquote': 'blockquote',
+    // 'a': 'hyperlink',
+    // 'blockquote': 'blockquote',
 } as const;
 
 export interface IContentfulGenerator {

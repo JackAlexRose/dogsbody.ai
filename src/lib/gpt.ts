@@ -6,52 +6,95 @@ import {
 import { getEnv } from "./utils/config.util";
 import { IGPTTransformedResponse } from "../definitions/IGPT";
 import { CONTENTFUL_GPT_BLOCK_MAP } from "../definitions/IContentful";
+import { displayInfo } from "./utils/display.util";
+import { cursorTo, moveCursor } from "readline";
+import chalk from "chalk";
 
 const configuration = new Configuration({
   apiKey: getEnv("OPEN_AI_TOKEN"),
 });
 const openai = new OpenAIApi(configuration);
 
-export const fetchFromGPT = async (message: string) => {
-  const chatCompletion = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo-0613",
-    messages: [{ role: "user", content: message }],
-    functions: [
-      {
-        name: "createRichText",
-        description:
-          "Takes an object with a text blocks property which is an array of html text tags and converts it into a single string with rich text formatting",
-        parameters: {
-          type: "object",
-          properties: {
-            textBlocks: {
-              type: "array",
-              description: "An array of text blocks.",
-              items: {
-                type: "object",
-                properties: {
-                  text: {
-                    type: "string",
+export const fetchFromGPT = (message: string) => {
+  return new Promise(async (resolve, reject) => {
+    const chatCompletion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo-0613",
+      messages: [{ role: "user", content: message }],
+      stream: true,
+      functions: [
+        {
+          name: "createRichText",
+          description:
+            "Takes an object with a text blocks property which is an array of html text tags and converts it into a single string with rich text formatting",
+          parameters: {
+            type: "object",
+            properties: {
+              textBlocks: {
+                type: "array",
+                description: "An array of text blocks.",
+                items: {
+                  type: "object",
+                  properties: {
+                    text: {
+                      type: "string",
+                    },
+                    type: {
+                      type: "string",
+                      enum: Object.keys(CONTENTFUL_GPT_BLOCK_MAP),
+                    },
+                    href: {
+                      type: "string",
+                    },
                   },
-                  type: {
-                    type: "string",
-                    enum: Object.keys(CONTENTFUL_GPT_BLOCK_MAP),
-                  },
-                  href: {
-                    type: "string",
-                  },
+                  required: ["text", "type"],
                 },
-                required: ["text", "type"],
               },
             },
+            required: ["textBlocks"],
           },
-          required: ["textBlocks"],
         },
-      },
-    ],
-  });
+      ],
+    }, { responseType: 'stream' });
+    displayInfo('OpenAI is off to work...');
 
-  return chatCompletion.data.choices[0].message;
+    let totalData = '';
+    let blocks = 0;
+    let currentLine = '';
+    let shouldWriteToConsole = false;
+    // http://www.clearscore.com/learn/managing-money/a-guide-to-debt-consolidation-loans
+
+    (chatCompletion.data as any).on('data', (data: Buffer) => {
+      const lines = data.toString().split('\n').filter(line => line.trim() !== '');
+      for (const line of lines) {
+          const message = line.replace(/^data: /, '');
+          try {
+              const parsed = JSON.parse(message);
+              const delta = parsed.choices[0].delta.function_call.arguments;
+
+              totalData += delta;
+              currentLine += delta;
+
+              if (currentLine.includes('"text"')) {
+                blocks++;
+                currentLine = '';
+                shouldWriteToConsole = true;
+              };
+
+              if (currentLine.includes('",\n') && shouldWriteToConsole) {
+                shouldWriteToConsole = false;
+                console.log('');
+              };
+
+              if (shouldWriteToConsole) {
+                cursorTo(process.stdout, 0);
+                process.stdout.write(chalk.yellowBright(`[BLOCK ${blocks}] ${currentLine.split(' ').length - 1} words`) + chalk.reset(` :: ${currentLine.slice(0, 50).replace(/(?:\r\n|\r|\n)/g, '')}...`))
+              };
+          } catch(error) {
+            resolve(totalData);
+          }
+        }
+    })
+  })
 };
 
 export const gptSuggestTags = async (message: string) => {
@@ -125,7 +168,7 @@ export const gptSuggestTags = async (message: string) => {
 };
 
 export const transformGPTResponse = (
-  message: ChatCompletionResponseMessage,
+  message: string,
   metadata: {
     title: string;
     description: string;
@@ -133,7 +176,7 @@ export const transformGPTResponse = (
     tags: ChatCompletionResponseMessage;
   }
 ): IGPTTransformedResponse => {
-  const pageData = JSON.parse(message.function_call!.arguments as string);
+  const pageData = JSON.parse(message);
   pageData.metadata = {
     title: metadata.title,
     description: metadata.description,
