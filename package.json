@@ -22,7 +22,8 @@
     "mime-types": "2.1.35",
     "openai": "3.3.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "sass": "1.63.6"
   },
   "devDependencies": {
     "@types/node": "20.4.1",
@@ -42,7 +43,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cli": "npx tsx --tsconfig ./tsconfig.json ./src/_server/index.ts"
   },
   "keywords": [],
   "author": "Jack Rose <jack.rose@clearscore.com> (https://www.clearscore.com/)",

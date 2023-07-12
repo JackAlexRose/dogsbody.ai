@@ -1,19 +1,25 @@
 import chalk from "chalk";
-import { fetchFromAdana, transformAdanaArticle } from "./adana";
-import {
-  fetchFromGPT,
-  gptSuggestTags,
-  transformGPTResponse,
-  gptPromptBuilder,
-  gptTagsPromptBuilder,
-} from "./gpt";
-import { doSomeWorkButMakeItPretty, writeToFile } from "./utils";
+import { fetchLearnArticle, transformAdanaArticle } from "../lib/adana";
+import { fetchFromGPT, gptPromptBuilder, gptSuggestTags, gptTagsPromptBuilder, transformGPTResponse } from "../lib/gpt";
+import { writeToFile } from "../lib/utils/files.util";
+import { displayInfo, doSomeWorkButMakeItPretty } from "../lib/utils/display.util";
+import { pushToContentful } from "../lib/contentful";
+import { createInterface } from "readline/promises";
 
-export const transformArticle = async (article: string) => {
+const run = async () => {
+  const readline = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  const articleLink = await readline.question(`${chalk.magentaBright('Enter Article link: ')}`);
+  readline.close();
+
   const adanaResponse = await doSomeWorkButMakeItPretty(
     "Adana Fetch",
     async () => {
-      const data = await fetchFromAdana(article);
+      const data = await fetchLearnArticle(articleLink);
+      displayInfo(`Found: ${data.meta.title}`);
       writeToFile("1-adana.json", data);
       return data;
     }
@@ -29,7 +35,7 @@ export const transformArticle = async (article: string) => {
   );
 
   const gptResponse = await doSomeWorkButMakeItPretty(
-    "Crunch numbers with AI",
+    "OpenAI Bleep Bloop",
     async () => {
       const data = await fetchFromGPT(
         gptPromptBuilder(adanaResponseTransformed.content)
@@ -50,7 +56,7 @@ export const transformArticle = async (article: string) => {
     }
   );
 
-  await doSomeWorkButMakeItPretty("Make the AI make sense", async () => {
+  const transformedGptResponse = await doSomeWorkButMakeItPretty("Make the AI make sense", async () => {
     const data = transformGPTResponse(gptResponse, {
       title: adanaResponseTransformed.title,
       description: adanaResponseTransformed.description,
@@ -61,5 +67,12 @@ export const transformArticle = async (article: string) => {
     return data;
   });
 
+  await doSomeWorkButMakeItPretty("Transform GPT to Contentful", async () => {
+    const pageUrl = await pushToContentful(transformedGptResponse);
+    displayInfo(`Contentful Link: ${pageUrl}`);
+  });
+
   console.log(chalk.magentaBright("All done and dusted."));
 };
+
+run();
