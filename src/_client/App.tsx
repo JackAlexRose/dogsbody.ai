@@ -1,16 +1,13 @@
 import logo from "./assets/dogsbody.svg";
 import "./App.scss";
-import { Center, Heading } from "@chakra-ui/react";
-import { useEffect } from "react";
-import { fetchAllLearnArticles } from "../lib/adana";
+import { Center, Heading, Text } from "@chakra-ui/react";
+import { useAdanaArticles } from "./lib/hooks/use-adana-articles";
 
 function App() {
-  useEffect(() => {
-    console.log('Testing');
-    fetchAllLearnArticles().then((articles) => {
-      console.log(articles.length);
-    });
-  }, [])
+  const {
+    articles,
+    articlesLoading
+  } = useAdanaArticles();
 
   return (
     <Center height="100vh" flexDirection="column">
@@ -18,6 +15,7 @@ function App() {
       <Heading as="h1" size="2xl">
         dogsbody.ai
       </Heading>
+      <Text>{ articlesLoading ? 'Loading...' : `${articles.length} Total Articles` }</Text>
     </Center>
   );
 }
