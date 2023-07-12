@@ -53,9 +53,9 @@ function App() {
           onClick={async () => {
             addMessageToHistory(input, "me");
             addMessageToHistory("Bleep bloop OpenAI is at work...", "dog");
-            const content = await fetchFromGPT(input, () => addMessageToHistory('Content Loaded', "dog"));
+            const content = await fetchFromGPT(input, () => addMessageToHistory('OpenAI Finished', "me"));
             addMessageToHistory("Generating Tags...", "dog");
-            const tags = await fetchTagsFromGPT(input, () => addMessageToHistory('Tags Loaded', "dog"));
+            const tags = await fetchTagsFromGPT(input, () => {});
 
             const adanaResponse = await fetchLearnArticle(input);
             const adanaTransformed = await transformAdanaArticle(adanaResponse);
@@ -67,11 +67,10 @@ function App() {
               tags: tags as string,
             });
 
-            addMessageToHistory(`Tags Generated: ${data.metadata.tags.join(', ')}`, "dog");
+            addMessageToHistory(`Tags Generated: ${data.metadata.tags.join(', ')}`, "me");
 
             const url = await pushToContentful(data, (msg) => addMessageToHistory(msg, "dog"));
-            addMessageToHistory(`Article Draft Created: ${url}`, "dog")
-            window.open(url, "_blank");
+            addMessageToHistory(`Article Draft Created: ${url}`, "me")
             setInput('');
           }}
         >
