@@ -66,9 +66,15 @@ export const fetchLearnArticle = async (articleUrl: string) => {
     {
       query,
     },
-    { headers: { "content-type": "application/json", "x-api-key": getEnv("ADANA_KEY") } }
+    {
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": getEnv("ADANA_KEY"),
+      },
+    }
   );
 
+  console.log(response.data.data.getAllLearnArticles);
   const article = response.data.data.getAllLearnArticles.filter(
     (article) => article.meta.url === articleUrl.replace("https", "http")
   );
@@ -88,7 +94,12 @@ export const fetchAllLearnArticles = async () => {
     {
       query,
     },
-    { headers: { "content-type": "application/json", "x-api-key": getEnv("ADANA_KEY") } }
+    {
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": getEnv("ADANA_KEY"),
+      },
+    }
   );
 
   return response.data.data.getAllLearnArticles.map((article) => ({
