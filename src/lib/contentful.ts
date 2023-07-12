@@ -10,7 +10,7 @@ const client = contentful.createClient({
 
 export const pushToContentful = async (data: IGPTTransformedResponse) => {
   const space = await client.getSpace(getEnv("CONTENTFUL_SPACE_ID"));
-  const env = await space.getEnvironment("development");
+  const env = await space.getEnvironment(getEnv('CONTENTFUL_ENVIRONMENT'));
   const url = new URL(data.metadata.url);
   
   const seoMetadata = generateSeoMetadata(data);
@@ -20,6 +20,29 @@ export const pushToContentful = async (data: IGPTTransformedResponse) => {
   const richText = generateRichText(data.textBlocks);
   displayInfo(`Creating ${richText.id}...`);
   const richTextResponse = await env.createEntry(richText.id, richText.data as any);
+
+  displayInfo(`Checking Tags...`);
+  const tags = (await env.getTags({
+    limit: 1000,
+  })).items;
+
+  for (let i = 0; i < data.metadata.tags.length; i++) {
+    const tag = data.metadata.tags[i];
+    if (!tags.find((x) => x.name === tag)) {
+      let camelCaseId = tag.toLowerCase().split(' ').map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`).join('');
+      camelCaseId = `${camelCaseId.charAt(0).toLowerCase()}${camelCaseId.slice(1)}`;
+      
+      displayInfo(`Creating Tag: ${camelCaseId}...`);
+      const tagResponse = await env.createTag(camelCaseId, tag);
+      tags.push({
+        name: tag,
+        sys: tagResponse.sys
+      } as any);
+    }
+  }
+
+  const tagsUsed = tags.filter((x) => data.metadata.tags.includes(x.name));
+  displayInfo(`Total Page Tags ${tagsUsed.length}`);
 
   displayInfo(`Creating Page...`);
   const pageResponse = await env.createEntry("Page", {
@@ -43,6 +66,15 @@ export const pushToContentful = async (data: IGPTTransformedResponse) => {
         }
       ]),
     },
+    metadata: {
+      tags: tagsUsed.map((x) => ({
+        sys: {
+          type: "Link",
+          id: x.sys.id,
+          linkType: 'Tag'
+        }
+      }))
+    }
   });
 
   return `https://app.contentful.com/spaces/${getEnv('CONTENTFUL_SPACE_ID')}/environments/${getEnv('CONTENTFUL_ENVIRONMENT')}/entries/${pageResponse.sys.id}`

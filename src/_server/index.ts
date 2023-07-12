@@ -78,7 +78,7 @@ const run = async () => {
         gptTagsPromptBuilder(adanaResponseTransformed.content),
         (_, total) => {
           cursorTo(process.stdout, 0);
-          process.stdout.write(chalk.yellowBright(`[TAGS]` ) + chalk.reset(total.split(' ').length))
+          process.stdout.write(chalk.yellowBright(`[TAGS] `) + chalk.reset(total.split(' \"').length))
         }
       );
       writeToFile("4-gpt-tags.json", data);
