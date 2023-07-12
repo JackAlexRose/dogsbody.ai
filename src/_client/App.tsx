@@ -15,8 +15,8 @@ function App() {
 
   const { articles, articlesLoading } = useAdanaArticles();
 
-  const { currentMessage, fetchFromGPT, isLoading } = useGPT();
-  const { currentTags, fetchTagsFromGPT, isLoadingTags } = useGPTTags();
+  const { fetchFromGPT, isLoading } = useGPT();
+  const { fetchTagsFromGPT, isLoadingTags } = useGPTTags();
 
   const [messages, setMessages] = useState([]);
 
@@ -24,12 +24,6 @@ function App() {
     // @ts-ignore-next-line
     setMessages((messages) => [...messages, { message, from }]);
   };
-
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <Center height="100vh" flexDirection="column">
@@ -49,11 +43,13 @@ function App() {
       >
         <Input
           value={input}
+          disabled={isLoading || isLoadingTags}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Prompt Input"
         ></Input>
         <Button
           type="submit"
+          isLoading={isLoading || isLoadingTags}
           onClick={async () => {
             addMessageToHistory(input, "me");
             addMessageToHistory("Loading Content...", "dog");
@@ -72,6 +68,8 @@ function App() {
               url: adanaTransformed.url,
               tags: tags as string,
             });
+
+            addMessageToHistory(`Tags Generated: ${data.metadata.tags.join(', ')}`, "dog");
 
             const url = await pushToContentful(data, (msg) => addMessageToHistory(msg, "dog"));
             addMessageToHistory(url, "dog")
