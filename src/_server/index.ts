@@ -1,10 +1,11 @@
 import chalk from "chalk";
 import { fetchLearnArticle, transformAdanaArticle } from "../lib/adana";
-import { fetchFromGPT, gptPromptBuilder, gptSuggestTags, gptTagsPromptBuilder, transformGPTResponse } from "../lib/gpt";
+import { fetchGptArticleCore, gptPromptBuilder, fetchGptArticleTags, gptTagsPromptBuilder, transformGPTResponse } from "../lib/gpt";
 import { writeToFile } from "../lib/utils/files.util";
 import { displayInfo, doSomeWorkButMakeItPretty } from "../lib/utils/display.util";
 import { pushToContentful } from "../lib/contentful";
 import { createInterface } from "readline/promises";
+import { cursorTo } from "readline";
 
 const run = async () => {
   const readline = createInterface({
@@ -37,8 +38,33 @@ const run = async () => {
   const gptResponse = await doSomeWorkButMakeItPretty(
     "OpenAI Bleep Bloop",
     async () => {
-      const data = await fetchFromGPT(
-        gptPromptBuilder(adanaResponseTransformed.content)
+      let totalData = '';
+      let blocks = 0;
+      let currentLine = '';
+      let shouldWriteToConsole = false;
+
+      const data = await fetchGptArticleCore(
+        gptPromptBuilder(adanaResponseTransformed.content),
+        (delta) => {
+          totalData += delta;
+          currentLine += delta;
+        
+          if (currentLine.includes('"text"')) {
+            blocks++;
+            currentLine = '';
+            shouldWriteToConsole = true;
+          };
+        
+          if (currentLine.includes('",\n') && shouldWriteToConsole) {
+            shouldWriteToConsole = false;
+            console.log('');
+          };
+        
+          if (shouldWriteToConsole) {
+            cursorTo(process.stdout, 0);
+            process.stdout.write(chalk.yellowBright(`[BLOCK ${blocks}] ${currentLine.split(' ').length - 1} words`) + chalk.reset(` :: ${currentLine.slice(0, 50).replace(/(?:\r\n|\r|\n)/g, '')}...`))
+          };
+        }
       );
       writeToFile("3-gpt.json", data);
       return data;
@@ -48,8 +74,12 @@ const run = async () => {
   const gptSuggestedTags = await doSomeWorkButMakeItPretty(
     "Generating tags with AI",
     async () => {
-      const data = await gptSuggestTags(
-        gptTagsPromptBuilder(adanaResponseTransformed.content)
+      const data = await fetchGptArticleTags(
+        gptTagsPromptBuilder(adanaResponseTransformed.content),
+        (_, total) => {
+          cursorTo(process.stdout, 0);
+          process.stdout.write(chalk.yellowBright(`[TAGS]` ) + chalk.reset(total.split(' ').length))
+        }
       );
       writeToFile("4-gpt-tags.json", data);
       return data;
