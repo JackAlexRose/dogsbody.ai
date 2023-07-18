@@ -1,11 +1,12 @@
-import { VStack, Box } from "@chakra-ui/react";
+import { VStack, Box, Spinner } from "@chakra-ui/react";
 
 type Props = {
-  message: string;
+  message?: string;
   from: "me" | "dog";
+  isLoading?: boolean;
 };
 
-const ChatBubble = ({ message, from }: Props) => {
+const ChatBubble = ({ message, from, isLoading }: Props) => {
   const borderRadius = 10;
   const isResponse = from === "dog";
   const alignment = isResponse ? "flex-start" : "flex-end";
@@ -25,6 +26,7 @@ const ChatBubble = ({ message, from }: Props) => {
         borderBottomRightRadius={bottomRightRadius}
       >
         {message}
+        {isLoading && <Spinner />}
       </Box>
     </VStack>
   );

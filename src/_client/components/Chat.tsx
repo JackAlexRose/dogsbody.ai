@@ -16,23 +16,23 @@ type Props = {
     from: "me" | "dog";
     message: string;
   }[];
+  isLoading?: boolean;
 };
 
-const Chat = ({ messages }: Props) => {
+const Chat = ({ messages, isLoading }: Props) => {
   return (
     <Flex w="full" overflowY="scroll" flexDirection="column" py="4">
       <Flex px={6} overflowY="scroll" flexDirection="column" flex={1}>
-        {messages ? (
-          messages.map(({ message, from }, index) => (
-            <ChatBubble
-              key={index}
-              message={message}
-              from={from as "me" | "dog"}
-            />
-          ))
-        ) : (
-          <Spacer />
-        )}
+        {messages
+          ? messages.map(({ message, from }, index) => (
+              <ChatBubble
+                key={index}
+                message={message}
+                from={from as "me" | "dog"}
+              />
+            ))
+          : null}
+        {isLoading ? <ChatBubble from="dog" isLoading /> : null}
       </Flex>
     </Flex>
   );
